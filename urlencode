@@ -1,0 +1,10 @@
+#!/usr/bin/env ruby
+require 'uri'
+
+run_as = File.basename($PROGRAM_NAME)
+
+abort "Usage: #{run_as} <string>" if ARGV.empty?
+
+encode_or_decode_method = run_as == 'urlencode' ? :encode_www_form_component : :decode_www_form_component
+
+puts URI.__send__(encode_or_decode_method, ARGV.first)
