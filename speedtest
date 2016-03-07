@@ -1,0 +1,3 @@
+#!/bin/sh
+set -e
+wget -O /dev/null http://speedtest.london.linode.com/100MB-london.bin
