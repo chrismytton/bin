@@ -1,0 +1,14 @@
+#!/usr/bin/env ruby
+
+def degrees2meters(lon, lat)
+  x = lon * 20037508.34 / 180;
+  y = Math.log(Math.tan((90 + lat) * Math::PI / 360)) / (Math::PI / 180);
+  y = y * 20037508.34 / 180;
+  [x, y]
+end
+
+if ARGV.size != 2
+  abort "Usage: #$0 <lon> <lat>"
+end
+
+puts degrees2meters(ARGV[0].to_f, ARGV[1].to_f).join(',')
