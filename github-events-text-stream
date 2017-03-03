@@ -1,0 +1,85 @@
+#!/usr/bin/env ruby
+require 'octokit'
+require 'pry'
+
+class Event
+  def initialize(event)
+    @event = event
+  end
+
+  def to_s
+    "#{event.created_at} #{event.actor.display_login} #{text}"
+  end
+
+  private
+
+  attr_reader :event
+
+  def ref
+    event.payload.ref.sub(%r{^refs/heads/}, '')
+  end
+end
+
+class IssueCommentEvent < Event
+  def text
+    "commented on #{event.payload.issue.html_url}"
+  end
+end
+
+class PushEvent < Event
+  def text
+    "pushed #{event.payload.size} commits to #{ref} at #{event.repo.name}"
+  end
+end
+
+class CreateEvent < Event
+  def text
+    "created #{event.payload.ref_type} #{ref} at #{event.repo.name}"
+  end
+end
+
+class PullRequestEvent < Event
+  def text
+    "#{action} pull request #{event.payload.pull_request.html_url}"
+  end
+
+  private
+
+  def action
+    case event.payload.action
+    when 'closed'
+      event.payload.pull_request.merged ? 'merged' : 'closed'
+    else
+      event.payload.action
+    end
+  end
+end
+
+class IssuesEvent < Event
+  def text
+    "#{event.payload.action} issue #{event.payload.issue.html_url}"
+  end
+end
+
+class PullRequestReviewCommentEvent < Event
+  def text
+    "#{event.payload.action} review comment on #{event.payload.pull_request.html_url}"
+  end
+end
+
+class DeleteEvent < Event
+  def text
+    "deleted #{event.payload.ref_type} #{event.payload.ref} at #{event.repo.name}"
+  end
+end
+
+Octokit.auto_paginate = true
+
+(Octokit.organization_public_events('everypolitician') + Octokit.organization_public_events('everypolitician-scrapers')).sort_by(&:created_at).each do |event|
+  begin
+    klass = Object.const_get(event.type)
+    puts klass.new(event)
+  rescue NameError => e
+    warn e
+  end
+end
