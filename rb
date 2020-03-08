@@ -1,4 +1,4 @@
-#!/usr/bin/env ruby
+#!/usr/bin/env ruby --disable-gems
 # https://github.com/thisredone/rb
 File.join(Dir.home, '.rbrc').tap { |f| load f if File.exists?(f) }
 
