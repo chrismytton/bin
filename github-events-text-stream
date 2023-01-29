@@ -28,7 +28,7 @@ end
 
 class PushEvent < Event
   def text
-    "pushed #{event.payload.size} commits to #{ref} at #{event.repo.name}"
+    "pushed to #{event.repo.name}: #{event.payload.size} commits to #{ref}"
   end
 end
 
@@ -73,9 +73,27 @@ class DeleteEvent < Event
   end
 end
 
+class PullRequestReviewEvent < Event
+  def text
+    "#{event.payload.action} a review on #{event.payload.pull_request.html_url}"
+  end
+end
+
+class ForkEvent < Event
+  def text
+    "forked #{event.repo.name} to #{event.payload.forkee.html_url}"
+  end
+end
+
+class DeleteEvent < Event
+  def text
+    "deleted #{ref} at #{event.repo.name}"
+  end
+end
+
 Octokit.auto_paginate = true
 
-(Octokit.organization_public_events('everypolitician') + Octokit.organization_public_events('everypolitician-scrapers')).sort_by(&:created_at).each do |event|
+Octokit.organization_public_events('mysociety').sort_by(&:created_at).each do |event|
   begin
     klass = Object.const_get(event.type)
     puts klass.new(event)
